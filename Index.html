@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mechanic on Wheels</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0d0d0d; --surface:#141414; --surface2:#1c1c1c;
+  --border:#272727; --border2:#363636;
+  --accent:#e85d04; --accent-dim:rgba(232,93,4,.1);
+  --text:#efefef; --muted:#888; --dim:#4a4a4a;
+  --success:#22c55e; --success-dim:rgba(34,197,94,.1);
+  --danger:#f87171; --danger-dim:rgba(248,113,113,.08);
+  --r:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;min-height:100vh}
+
+.page{display:none}.page.active{display:block}
+
+/* ── CUSTOMER ── */
+#customerPage{display:flex;align-items:flex-start;justify-content:center;padding:40px 16px 80px;min-height:100vh}
+.c-wrap{width:100%;max-width:560px}
+.c-tag{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.c-title{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;line-height:1;color:var(--text);margin-bottom:8px}
+.c-sub{font-size:14px;color:var(--muted);font-weight:300;line-height:1.6}
+.c-header{margin-bottom:36px}
+
+.prog{display:flex;gap:5px;margin-bottom:36px}
+.prog-seg{height:3px;flex:1;background:var(--border);border-radius:2px;transition:background .3s}
+.prog-seg.active{background:var(--accent)}.prog-seg.done{background:rgba(232,93,4,.35)}
+.step-lbl{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:26px}
+.step-lbl span{color:var(--muted)}
+
+.c-step{display:none;animation:fadeUp .28s ease}.c-step.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.sec-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:22px}
+
+.fg{margin-bottom:16px}.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+label .req{color:var(--accent);margin-left:2px}
+input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:12px 15px;border-radius:var(--r);outline:none;transition:border-color .2s,background .2s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);background:var(--surface)}
+input::placeholder,textarea::placeholder{color:var(--dim);font-weight:300}
+input:disabled{opacity:.6;cursor:not-allowed}
+select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='6' fill='none'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
+select option{background:#1c1c1c}
+textarea{resize:none;min-height:100px;line-height:1.6}
+input.invalid,select.invalid,textarea.invalid{border-color:var(--danger)!important}
+.err-msg{font-size:11px;color:var(--danger);margin-top:4px;display:none}
+.autofilled{border-color:rgba(34,197,94,.35)!important;background:rgba(34,197,94,.03)!important}
+
+/* VIN SECTION */
+.vin-tabs{display:flex;gap:0;margin-bottom:12px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.vin-tab{flex:1;padding:9px 14px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);background:var(--surface2);border:none;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px}
+.vin-tab+.vin-tab{border-left:1px solid var(--border)}
+.vin-tab.active{background:var(--surface);color:var(--text)}
+.vin-tab:hover:not(.active){color:var(--text)}
+
+.vin-panel{display:none}.vin-panel.active{display:block}
+
+.vin-row{display:flex;gap:8px}
+.vin-row input{flex:1;font-family:'Courier New',monospace;font-size:13px;letter-spacing:1.5px;text-transform:uppercase}
+.btn-decode{flex-shrink:0;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border-radius:var(--r);cursor:pointer;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:6px;min-width:100px;justify-content:center}
+.btn-decode:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.btn-decode:disabled{opacity:.45;pointer-events:none}
+.btn-decode.ok{border-color:rgba(34,197,94,.4);color:var(--success);background:var(--success-dim)}
+
+.vin-hint{margin-top:6px;font-size:11px;color:var(--dim);line-height:1.5}
+.vin-hint b{color:var(--muted);font-weight:500}
+
+/* Photo VIN */
+.photo-drop{border:1.5px dashed var(--border2);border-radius:var(--r);padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--surface2)}
+.photo-drop:hover{border-color:var(--accent);background:rgba(232,93,4,.03)}
+.photo-drop.drag-over{border-color:var(--accent);background:var(--accent-dim)}
+.photo-drop-icon{font-size:28px;margin-bottom:8px;line-height:1}
+.photo-drop-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.5px;color:var(--text);margin-bottom:4px}
+.photo-drop-sub{font-size:12px;color:var(--muted)}
+.photo-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+.photo-preview-wrap{position:relative;margin-top:10px;display:none}
+.photo-preview{width:100%;max-height:180px;object-fit:contain;border-radius:var(--r);border:1px solid var(--border)}
+.photo-clear{position:absolute;top:6px;right:6px;width:26px;height:26px;background:rgba(0,0,0,.7);border:none;border-radius:50%;color:#fff;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+
+.decode-msg{margin-top:8px;font-size:12px;padding:8px 12px;border-radius:var(--r);display:none;align-items:center;gap:6px}
+.decode-msg.ok{background:var(--success-dim);color:var(--success);display:flex}
+.decode-msg.err{background:var(--danger-dim);color:var(--danger);display:flex}
+.decode-msg.loading{background:var(--surface2);border:1px solid var(--border);color:var(--muted);display:flex}
+
+hr.div{border:none;border-top:1px solid var(--border);margin:22px 0}
+
+.pill-grp{display:flex;gap:7px;flex-wrap:wrap}
+.pill input[type=radio]{display:none}
+.pill label{display:inline-block;padding:8px 16px;border:1px solid var(--border);border-radius:100px;font-size:13px;font-weight:400;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;margin-bottom:0;text-transform:none;letter-spacing:.3px}
+.pill input[type=radio]:checked+label{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.pill label:hover{border-color:var(--border2);color:var(--text)}
+
+.btn-row{display:flex;gap:10px;margin-top:32px}
+.btn-next,.btn-submit{flex:1;padding:14px 20px;background:var(--accent);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .2s,transform .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-next:hover,.btn-submit:hover{opacity:.85;transform:translateY(-1px)}
+.btn-next:active,.btn-submit:active{transform:translateY(0)}
+.btn-submit:disabled{opacity:.5;pointer-events:none}
+.btn-back{padding:14px 18px;background:transparent;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-back:hover{border-color:var(--border2);color:var(--text)}
+
+.c-success{display:none;text-align:center;padding:60px 0;animation:fadeUp .4s ease}
+.c-success-icon{width:60px;height:60px;background:var(--success-dim);border:1px solid rgba(34,197,94,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px}
+.c-success h2{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;margin-bottom:10px}
+.c-success p{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:6px;max-width:340px;margin-left:auto;margin-right:auto}
+.c-success .call-cta{font-size:16px;color:var(--text);font-weight:500;margin-top:18px;padding:14px 24px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);display:inline-block}
+.c-success .call-cta a{color:var(--accent);text-decoration:none;font-weight:600}
+.c-footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.c-footer-brand{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+.c-footer-note{font-size:11px;color:var(--dim)}
+
+/* spinners */
+.spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite;flex-shrink:0}
+.spin-sm{width:11px;height:11px;border:2px solid rgba(136,136,136,.3);border-top-color:var(--muted);border-radius:50%;animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ── OPERATOR ── */
+#operatorPage{min-height:100vh}
+.op-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 16px}
+.op-login-box{width:100%;max-width:340px}
+.op-login-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--text);margin-bottom:6px}
+.op-login-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
+.op-login-err{font-size:12px;color:var(--danger);margin-top:8px;display:none}
+.op-login-btn{width:100%;margin-top:14px;padding:14px;background:var(--accent);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .2s}
+.op-login-btn:hover{opacity:.85}
+
+.op-dashboard{display:none}
+.op-nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:54px}
+.op-nav-brand{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+.op-nav-brand span{color:var(--accent)}
+.op-nav-right{display:flex;align-items:center;gap:10px}
+.op-badge{background:var(--danger);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;display:none;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.op-btn{padding:7px 14px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;border-radius:var(--r);cursor:pointer;transition:all .2s}
+.op-btn.sec{background:var(--surface2);border:1px solid var(--border);color:var(--muted)}.op-btn.sec:hover{border-color:var(--border2);color:var(--text)}
+.op-btn.pri{background:var(--accent);border:none;color:#fff}.op-btn.pri:hover{opacity:.85}
+.op-btn.danger{background:transparent;border:1px solid var(--border);color:var(--dim)}.op-btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+
+.op-body{padding:24px}
+.op-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.stat-label{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.stat-val{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;line-height:1}
+.stat-val.c-orange{color:var(--accent)}.stat-val.c-green{color:var(--success)}.stat-val.c-red{color:var(--danger)}
+
+.op-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.fp{padding:6px 14px;border:1px solid var(--border);border-radius:100px;font-size:12px;color:var(--muted);cursor:pointer;background:var(--surface2);font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.5px;transition:all .2s}
+.fp:hover{border-color:var(--border2);color:var(--text)}.fp.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.op-search{margin-left:auto;padding:7px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;border-radius:100px;outline:none;width:200px;transition:border-color .2s}
+.op-search:focus{border-color:var(--accent)}.op-search::placeholder{color:var(--dim)}
+
+.op-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.op-table{width:100%;border-collapse:collapse;font-size:13px}
+.op-table th{padding:10px 14px;text-align:left;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
+.op-table td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.op-table tr:last-child td{border-bottom:none}.op-table tr:hover td{background:rgba(255,255,255,.015);cursor:pointer}
+.op-table tr.is-new td{background:rgba(232,93,4,.04)}
+.ub{display:inline-block;padding:3px 8px;border-radius:100px;font-size:10px;font-weight:600;letter-spacing:.5px;font-family:'Barlow Condensed',sans-serif;white-space:nowrap}
+.u-em{background:rgba(248,113,113,.15);color:#f87171}.u-asap{background:rgba(251,191,36,.12);color:#fbbf24}
+.u-week{background:rgba(96,165,250,.12);color:#60a5fa}.u-flex{background:rgba(100,100,100,.15);color:#888}
+.op-empty{padding:50px;text-align:center;color:var(--dim);font-size:14px}
+
+/* Drawer */
+.drw-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;display:none;backdrop-filter:blur(3px)}
+.drw{position:fixed;right:0;top:0;bottom:0;width:400px;max-width:100vw;background:var(--surface);border-left:1px solid var(--border);z-index:101;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.drw.open{transform:translateX(0)}
+.drw-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.drw-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700}
+.drw-close{width:30px;height:30px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;transition:all .2s}
+.drw-close:hover{border-color:var(--border2);color:var(--text)}
+.drw-body{padding:22px;overflow-y:auto;flex:1}
+.dl-sec{margin-bottom:20px}
+.dl-sec-title{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.dl-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--border)}
+.dl-row:last-child{border-bottom:none}
+.dl-k{font-size:12px;color:var(--muted);flex-shrink:0;width:110px}
+.dl-v{font-size:13px;color:var(--text);text-align:right;word-break:break-word}
+.dl-desc{font-size:13px;color:var(--text);line-height:1.6;margin-top:4px;padding:12px;background:var(--surface2);border-radius:var(--r)}
+
+/* ── ALERT BANNER (like Yelp) ── */
+.alert-banner{
+  position:fixed;top:0;left:0;right:0;z-index:9999;
+  transform:translateY(-100%);transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;
+}
+.alert-banner.show{transform:translateY(0);pointer-events:auto}
+.alert-inner{
+  margin:10px 14px 0;background:#1a1a1a;border:1px solid rgba(232,93,4,.4);
+  border-radius:14px;overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,0,0,.7),0 0 0 1px rgba(232,93,4,.15);
+}
+.alert-bar{height:3px;background:var(--accent);width:100%;transform-origin:left;animation:drain 6s linear forwards}
+@keyframes drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.alert-content{display:flex;align-items:center;gap:14px;padding:14px 16px}
+.alert-icon{width:42px;height:42px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px}
+.alert-text{flex:1;min-width:0}
+.alert-app{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:2px;font-family:'Barlow Condensed',sans-serif}
+.alert-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alert-body{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alert-time{font-size:11px;color:var(--dim);flex-shrink:0}
+.alert-actions{display:flex;gap:8px;padding:0 16px 14px}
+.alert-action{flex:1;padding:9px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:8px;cursor:pointer;text-align:center;border:none;transition:opacity .15s}
+.alert-action.view{background:var(--accent);color:#fff}.alert-action.view:hover{opacity:.85}
+.alert-action.dismiss{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}.alert-action.dismiss:hover{color:var(--text)}
+
+/* mobile */
+@media(max-width:640px){
+  .op-stats{grid-template-columns:1fr 1fr}
+  .op-body{padding:14px}.op-nav{padding:0 14px}
+  .drw{width:100vw}
+  .fr{grid-template-columns:1fr}
+  .vin-row{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ ALERT BANNER ══ -->
+<div class="alert-banner" id="alertBanner">
+  <div class="alert-inner">
+    <div class="alert-bar" id="alertBar"></div>
+    <div class="alert-content">
+      <div class="alert-icon">🔧</div>
+      <div class="alert-text">
+        <div class="alert-app">Mechanic on Wheels</div>
+        <div class="alert-title" id="alertTitle">New service request</div>
+        <div class="alert-body" id="alertBody">A customer submitted a request</div>
+      </div>
+      <div class="alert-time" id="alertTime">now</div>
+    </div>
+    <div class="alert-actions">
+      <div class="alert-action view" onclick="viewFromAlert()">View Lead</div>
+      <div class="alert-action dismiss" onclick="dismissAlert()">Dismiss</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CUSTOMER PAGE ══ -->
+<div class="page active" id="customerPage">
+<div class="c-wrap">
+  <div class="c-header">
+    <div class="c-tag">Mechanic on Wheels</div>
+    <h1 class="c-title">Service Request</h1>
+    <p class="c-sub">Fill this out and we'll get back to you with an accurate quote — usually within 20 minutes.</p>
+  </div>
+  <div class="prog">
+    <div class="prog-seg active" id="seg0"></div>
+    <div class="prog-seg" id="seg1"></div>
+    <div class="prog-seg" id="seg2"></div>
+  </div>
+  <div class="step-lbl" id="stepLbl"><span>Step 1 of 3</span> — Your Info</div>
+
+  <!-- Step 1 -->
+  <div class="c-step active" id="cs0">
+    <div class="sec-title">Contact Information</div>
+    <div class="fr">
+      <div class="fg"><label>First Name <span class="req">*</span></label><input type="text" id="firstName" placeholder="Jane" autocomplete="given-name"><div class="err-msg" id="e-firstName">Required</div></div>
+      <div class="fg"><label>Last Name <span class="req">*</span></label><input type="text" id="lastName" placeholder="Smith" autocomplete="family-name"><div class="err-msg" id="e-lastName">Required</div></div>
+    </div>
+    <div class="fg"><label>Phone Number <span class="req">*</span></label><input type="tel" id="phone" placeholder="(702) 555-0100" autocomplete="tel"><div class="err-msg" id="e-phone">Enter a valid phone number</div></div>
+    <div class="fg"><label>Email Address</label><input type="email" id="email" placeholder="jane@email.com" autocomplete="email"><div class="err-msg" id="e-email">Enter a valid email</div></div>
+    <div class="fg"><label>Service Zip Code <span class="req">*</span></label><input type="text" id="zip" placeholder="89052" maxlength="5" inputmode="numeric"><div class="err-msg" id="e-zip">Enter a valid 5-digit zip</div></div>
+    <div class="btn-row"><button class="btn-next" onclick="cNext(0)">Continue →</button></div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="c-step" id="cs1">
+    <div class="sec-title">Vehicle Details</div>
+
+    <div class="fg">
+      <label>VIN — <span style="color:var(--success);font-size:9px;letter-spacing:1px">OPTIONAL · AUTO-FILLS BELOW</span></label>
+
+      <div class="vin-tabs">
+        <button class="vin-tab active" onclick="switchVinTab('text',this)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+          Type VIN
+        </button>
+        <button class="vin-tab" onclick="switchVinTab('photo',this)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Scan Photo
+        </button>
+      </div>
+
+      <!-- Text tab -->
+      <div class="vin-panel active" id="vinText">
+        <div class="vin-row">
+          <input type="text" id="vin" placeholder="Enter VIN to auto-fill" maxlength="17" autocomplete="off" spellcheck="false">
+          <button class="btn-decode" id="decodeBtn" onclick="decodeVinText()">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Decode
+          </button>
+        </div>
+        <div class="vin-hint">Found on your <b>dashboard (driver's side)</b> or <b>door jamb</b>.</div>
+      </div>
+
+      <!-- Photo tab -->
+      <div class="vin-panel" id="vinPhoto">
+        <div class="photo-drop" id="photoDrop" onclick="document.getElementById('vinPhotoInput').click()">
+          <div class="photo-drop-icon">📷</div>
+          <div class="photo-drop-title">Tap to take photo or upload</div>
+          <div class="photo-drop-sub">Photo of VIN sticker, dashboard, or door jamb</div>
+          <input type="file" id="vinPhotoInput" accept="image/*" capture="environment" onchange="handlePhotoVIN(this)">
+        </div>
+        <div class="photo-preview-wrap" id="photoPreviewWrap">
+          <img id="photoPreview" class="photo-preview" src="" alt="VIN photo">
+          <button class="photo-clear" onclick="clearPhoto()">✕</button>
+        </div>
+      </div>
+
+      <div class="decode-msg" id="decodeMsg"></div>
+    </div>
+
+    <hr class="div">
+
+    <div class="fr">
+      <div class="fg"><label>Year <span class="req">*</span></label><input type="text" id="year" placeholder="2018" maxlength="4" inputmode="numeric"><div class="err-msg" id="e-year">Enter a valid year</div></div>
+      <div class="fg"><label>Make <span class="req">*</span></label><input type="text" id="make" placeholder="Toyota"><div class="err-msg" id="e-make">Required</div></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Model <span class="req">*</span></label><input type="text" id="model" placeholder="Camry"><div class="err-msg" id="e-model">Required</div></div>
+      <div class="fg"><label>Sub-Model / Trim <span class="req">*</span></label><input type="text" id="submodel" placeholder="SE, XLE, Sport…"><div class="err-msg" id="e-submodel">Required</div></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Engine <span class="req">*</span></label><input type="text" id="engine" placeholder="2.5L 4-Cyl, 3.5L V6…"><div class="err-msg" id="e-engine">Required</div></div>
+      <div class="fg"><label>Mileage</label><input type="text" id="mileage" placeholder="87,400" inputmode="numeric"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="cPrev(1)">← Back</button>
+      <button class="btn-next" onclick="cNext(1)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="c-step" id="cs2">
+    <div class="sec-title">Service Details</div>
+    <div class="fg">
+      <label>Service Type <span class="req">*</span></label>
+      <select id="serviceType">
+        <option value="" disabled selected>Select a service</option>
+        <option>Oil Change</option><option>Brake Service</option>
+        <option>Battery Replacement</option><option>Engine Diagnostics</option>
+        <option>Tire Rotation / Balance</option><option>Transmission Service</option>
+        <option>AC / Heating Repair</option><option>Suspension / Steering</option>
+        <option>Electrical / Wiring</option><option>Pre-Purchase Inspection</option>
+        <option>General Maintenance</option><option>Other</option>
+      </select>
+      <div class="err-msg" id="e-serviceType">Select a service type</div>
+    </div>
+    <div class="fg"><label>Describe the Issue <span class="req">*</span></label><textarea id="description" placeholder="Describe what's happening — sounds, warning lights, symptoms, when it started, etc."></textarea><div class="err-msg" id="e-description">Please describe the issue</div></div>
+    <hr class="div">
+    <div class="fg">
+      <label>How Urgent Is This?</label>
+      <div class="pill-grp">
+        <div class="pill"><input type="radio" name="urg" id="u1" value="Flexible"><label for="u1">Flexible</label></div>
+        <div class="pill"><input type="radio" name="urg" id="u2" value="Within a week" checked><label for="u2">Within a week</label></div>
+        <div class="pill"><input type="radio" name="urg" id="u3" value="ASAP — 1–2 days"><label for="u3">ASAP</label></div>
+        <div class="pill"><input type="radio" name="urg" id="u4" value="Emergency — today"><label for="u4">Emergency</label></div>
+      </div>
+    </div>
+    <div class="fg">
+      <label>How Did You Find Us?</label>
+      <select id="source">
+        <option value="">Select one (optional)</option>
+        <option>Yelp</option><option>Google</option><option>Word of Mouth</option>
+        <option>Facebook / Instagram</option><option>Nextdoor</option>
+        <option>Repeat Customer</option><option>Other</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="cPrev(2)">← Back</button>
+      <button class="btn-submit" id="submitBtn" onclick="submitForm()">Submit Request</button>
+    </div>
+  </div>
+
+  <!-- Success -->
+  <div class="c-success" id="cSuccess">
+    <div class="c-success-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success)"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <h2>Request Received</h2>
+    <p>We'll get back to you within 20 minutes with an accurate quote.</p>
+    <div class="call-cta">For emergencies, call us directly:<br><a href="tel:7029552963">(702) 955-2963</a></div>
+  </div>
+
+  <div class="c-footer">
+    <div class="c-footer-brand">Mechanic on Wheels</div>
+    <div class="c-footer-note">Henderson, NV · <a href="tel:7029552963" style="color:var(--dim);text-decoration:none">(702) 955-2963</a> · <a href="#operator" style="color:var(--dim);text-decoration:none;font-size:10px">Staff</a></div>
+  </div>
+</div>
+</div>
+
+<!-- ══ OPERATOR PAGE ══ -->
+<div class="page" id="operatorPage">
+  <div class="op-login" id="opLogin">
+    <div class="op-login-box">
+      <div class="c-tag" style="margin-bottom:10px">Mechanic on Wheels</div>
+      <div class="op-login-title">Operator Dashboard</div>
+      <div class="op-login-sub">Enter your password to access leads</div>
+      <div class="fg"><label>Password</label><input type="password" id="opPw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="op-login-err" id="opErr">Incorrect password. Try again.</div>
+      <button class="op-login-btn" onclick="doLogin()">Sign In →</button>
+    </div>
+  </div>
+
+  <div class="op-dashboard" id="opDash">
+    <div class="op-nav">
+      <div class="op-nav-brand"><span>MOW</span> · Leads</div>
+      <div class="op-nav-right">
+        <div class="op-badge" id="newBadge"></div>
+        <button class="op-btn sec" onclick="refreshDash()">↻ Refresh</button>
+        <button class="op-btn pri" onclick="exportCSV()">Export CSV</button>
+        <button class="op-btn danger" onclick="doLogout()">Sign Out</button>
+      </div>
+    </div>
+    <div class="op-body">
+      <div class="op-stats">
+        <div class="stat-card"><div class="stat-label">Total Leads</div><div class="stat-val" id="sTotal">0</div></div>
+        <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-val c-orange" id="sWeek">0</div></div>
+        <div class="stat-card"><div class="stat-label">Emergency</div><div class="stat-val c-red" id="sEmerg">0</div></div>
+        <div class="stat-card"><div class="stat-label">Avg / Day</div><div class="stat-val c-green" id="sAvg">0</div></div>
+      </div>
+      <div class="op-filters">
+        <div class="fp active" onclick="setFilter('all',this)">All</div>
+        <div class="fp" onclick="setFilter('Emergency',this)">Emergency</div>
+        <div class="fp" onclick="setFilter('ASAP',this)">ASAP</div>
+        <div class="fp" onclick="setFilter('Within a week',this)">This Week</div>
+        <div class="fp" onclick="setFilter('Flexible',this)">Flexible</div>
+        <input type="text" class="op-search" id="opSearch" placeholder="Search name, VIN, service…" oninput="renderTable()">
+      </div>
+      <div class="op-table-wrap">
+        <table class="op-table">
+          <thead><tr><th>Time</th><th>Customer</th><th>Vehicle</th><th>Service</th><th>Urgency</th><th>VIN</th></tr></thead>
+          <tbody id="leadsBody"><tr><td colspan="6" class="op-empty">No leads yet.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Drawer -->
+<div class="drw-overlay" id="drwOverlay" onclick="closeDrawer()"></div>
+<div class="drw" id="drw">
+  <div class="drw-head">
+    <div class="drw-title" id="drwTitle">Lead Details</div>
+    <div class="drw-close" onclick="closeDrawer()">✕</div>
+  </div>
+  <div class="drw-body" id="drwBody"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════
+const CFG = {
+  OP_PASSWORD: 'MOW2024',        // ← change this
+  SHEETS_URL:  'https://script.google.com/macros/s/AKfycbxqDaQdvBMH9BwCYLeg2xjjy5PuSn3ZLe0rJ-IPGFu1fCVOjYuA0JtNRb5dK2NijRyA/exec',               // ← paste Google Apps Script URL
+  CLAUDE_KEY:  '', // key removed — VIN decode now proxied through Apps Script
+};
+
+// ══════════════════════════════════════
+// ROUTER
+// ══════════════════════════════════════
+function route() {
+  const h = location.hash;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(h === '#operator' ? 'operatorPage' : 'customerPage').classList.add('active');
+}
+window.addEventListener('hashchange', route);
+// Run on load with slight delay to ensure hash is available
+if(document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', route);
+} else {
+  route();
+}
+
+// ══════════════════════════════════════
+// CUSTOMER — FORM
+// ══════════════════════════════════════
+const STEP_LABELS = [
+  '<span>Step 1 of 3</span> — Your Info',
+  '<span>Step 2 of 3</span> — Your Vehicle',
+  '<span>Step 3 of 3</span> — Service Details',
+];
+function updateProg(n) {
+  for (let i=0;i<3;i++) {
+    const s=document.getElementById('seg'+i);
+    s.className='prog-seg'+(i<n?' done':i===n?' active':'');
+  }
+  document.getElementById('stepLbl').innerHTML=STEP_LABELS[n];
+}
+function showCStep(n) {
+  document.querySelectorAll('.c-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('cs'+n).classList.add('active');
+  updateProg(n);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function setErr(id,show) {
+  const el=document.getElementById(id), em=document.getElementById('e-'+id);
+  if(show){el?.classList.add('invalid');if(em)em.style.display='block';}
+  else{el?.classList.remove('invalid');if(em)em.style.display='none';}
+  return !show;
+}
+function fv(id){return(document.getElementById(id)?.value||'').trim()}
+
+function v0(){
+  let ok=true;
+  ok=setErr('firstName',!fv('firstName'))&&ok;
+  ok=setErr('lastName',!fv('lastName'))&&ok;
+  ok=setErr('phone',fv('phone').replace(/\D/g,'').length<10)&&ok;
+  const em=fv('email');
+  if(em)ok=setErr('email',!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em))&&ok;
+  ok=setErr('zip',fv('zip').replace(/\D/g,'').length!==5)&&ok;
+  return ok;
+}
+function v1(){
+  let ok=true;
+  const y=fv('year');
+  ok=setErr('year',!/^\d{4}$/.test(y)||+y<1950||+y>new Date().getFullYear()+2)&&ok;
+  ok=setErr('make',!fv('make'))&&ok;
+  ok=setErr('model',!fv('model'))&&ok;
+  ok=setErr('submodel',!fv('submodel'))&&ok;
+  ok=setErr('engine',!fv('engine'))&&ok;
+  return ok;
+}
+function v2(){
+  let ok=true;
+  ok=setErr('serviceType',!fv('serviceType'))&&ok;
+  ok=setErr('description',!fv('description'))&&ok;
+  return ok;
+}
+function cNext(from){if([v0,v1,v2][from]())showCStep(from+1)}
+function cPrev(from){showCStep(from-1)}
+
+
+
+// ══════════════════════════════════════
+// VIN TABS
+// ══════════════════════════════════════
+function switchVinTab(mode, btn) {
+  document.querySelectorAll('.vin-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.vin-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(mode==='text'?'vinText':'vinPhoto').classList.add('active');
+  document.getElementById('decodeMsg').className='decode-msg';
+}
+
+// ══════════════════════════════════════
+// VIN DECODE — TEXT (NHTSA API)
+// ══════════════════════════════════════
+const ICO_SEARCH = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+const ICO_CHECK  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+let autoDecodeTimer = null;
+
+document.getElementById('vin').addEventListener('input', function() {
+  const pos = this.selectionStart;
+  const cleaned = this.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g,'');
+  if(cleaned !== this.value){ this.value=cleaned; try{this.setSelectionRange(pos,pos)}catch(e){} }
+
+  const btn = document.getElementById('decodeBtn');
+  if(btn.classList.contains('ok')){ btn.classList.remove('ok'); btn.innerHTML=ICO_SEARCH+' Decode'; }
+
+  clearTimeout(autoDecodeTimer);
+  if(this.value.length===17) autoDecodeTimer=setTimeout(decodeVinText,400);
+});
+
+async function decodeVinText() {
+  const vin = fv('vin').toUpperCase();
+  const btn = document.getElementById('decodeBtn');
+
+  if(vin.length !== 17) {
+    showDecodeMsg('err','VIN must be exactly 17 characters.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin-sm"></div> Decoding';
+  document.getElementById('decodeMsg').className = 'decode-msg';
+
+  // Extract year from VIN position 10 -- works instantly, no network needed
+  const VIN_YEARS = {A:1980,B:1981,C:1982,D:1983,E:1984,F:1985,G:1986,H:1987,J:1988,K:1989,L:1990,M:1991,N:1992,P:1993,R:1994,S:1995,T:1996,V:1997,W:1998,X:1999,Y:2000,'1':2001,'2':2002,'3':2003,'4':2004,'5':2005,'6':2006,'7':2007,'8':2008,'9':2009};
+  const POST2009  = {A:2010,B:2011,C:2012,D:2013,E:2014,F:2015,G:2016,H:2017,J:2018,K:2019,L:2020,M:2021,N:2022,P:2023,R:2024,S:2025};
+  const ch = vin[9];
+  const yearFromVin = POST2009[ch] || VIN_YEARS[ch] || null;
+
+  if(yearFromVin) {
+    const el = document.getElementById('year');
+    if(el && !el.value) { el.value = yearFromVin; el.classList.add('autofilled'); setErr('year',false); }
+  }
+
+  // Proxy VIN decode through Apps Script via JSONP (bypasses CORS)
+  if(CFG.SHEETS_URL) {
+    try {
+      const resp = await fetch(CFG.SHEETS_URL + '?action=vin&vin=' + encodeURIComponent(vin));
+      if(!resp.ok) throw new Error('HTTP ' + resp.status);
+      const p = await resp.json();
+      if(p.error) throw new Error(p.error);
+
+      const fields = {
+        year:     p.year     || String(yearFromVin || ''),
+        make:     p.make     || '',
+        model:    p.model    || '',
+        submodel: p.trim     || '',
+        engine:   p.engine   || '',
+      };
+      Object.entries(fields).forEach(([id,v]) => {
+        if(v){ const el=document.getElementById(id); if(el){el.value=v;el.classList.add('autofilled');setErr(id,false);} }
+      });
+
+      btn.disabled = false; btn.classList.add('ok'); btn.innerHTML = ICO_CHECK + ' Done';
+      const desc = [p.year||yearFromVin, p.make, p.model, p.trim].filter(Boolean).join(' ');
+      showDecodeMsg('ok', 'Found: ' + desc + ' -- review the fields below and correct anything if needed.');
+      return;
+
+    } catch(err) {
+      console.warn('Claude VIN decode failed:', err.message);
+      vinLastError = err.message;
+    }
+  }
+
+  // Fallback -- partial fill with year only
+  btn.disabled = false;
+  btn.innerHTML = ICO_SEARCH + ' Decode';
+  if(yearFromVin) {
+    showDecodeMsg('ok', 'Year ' + yearFromVin + ' extracted from VIN. Fill in make, model, trim and engine manually. <span style="color:var(--danger);cursor:pointer;text-decoration:underline" onclick="showVinError()">See error</span>');
+  } else {
+    showDecodeMsg('err', 'Could not decode VIN. Fill in the vehicle fields manually -- your VIN will still be saved. <span style="color:var(--danger);cursor:pointer;text-decoration:underline" onclick="showVinError()">See error</span>');
+  }
+}
+
+let vinLastError = '';
+function showVinError() {
+  alert('VIN decode error:\n\n' + (vinLastError || 'No error captured -- the request may not have fired at all (CORS or network block).') + '\n\nCheck browser console (F12 > Console) for full details.');
+}
+
+function capWord(s) {
+  if(!s) return '';
+  return s.toLowerCase().replace(/\b\w/g, c=>c.toUpperCase());
+}
+
+function showDecodeMsg(type, text) {
+  const el = document.getElementById('decodeMsg');
+  el.className = 'decode-msg ' + type;
+  el.innerHTML = text;
+}
+
+// ══════════════════════════════════════
+// VIN DECODE — PHOTO (Claude AI)
+// ══════════════════════════════════════
+let photoBase64 = null;
+
+function handlePhotoVIN(input) {
+  const file = input.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const dataUrl = e.target.result;
+    photoBase64 = dataUrl.split(',')[1];
+    const mediaType = file.type || 'image/jpeg';
+
+    // Show preview
+    document.getElementById('photoPreview').src = dataUrl;
+    document.getElementById('photoPreviewWrap').style.display = 'block';
+    document.getElementById('photoDrop').style.display = 'none';
+
+    await decodeVinFromPhoto(photoBase64, mediaType);
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearPhoto() {
+  photoBase64 = null;
+  document.getElementById('photoPreview').src = '';
+  document.getElementById('photoPreviewWrap').style.display = 'none';
+  document.getElementById('photoDrop').style.display = 'block';
+  document.getElementById('vinPhotoInput').value = '';
+  document.getElementById('decodeMsg').className = 'decode-msg';
+  // Clear autofilled fields
+  ['year','make','model','submodel','engine'].forEach(id => {
+    document.getElementById(id)?.classList.remove('autofilled');
+  });
+}
+
+async function decodeVinFromPhoto(base64, mediaType) {
+  showDecodeMsg('loading', '🔍 Analyzing photo with AI — this takes a few seconds…');
+
+  if(!CFG.CLAUDE_KEY) {
+    showDecodeMsg('err', '⚠ Claude API key not set. Ask your operator to configure the CLAUDE_KEY in the app settings, or type the VIN manually.');
+    return;
+  }
+
+  try {
+    const prompt = `Look at this image and extract vehicle information from the VIN sticker, dashboard VIN plate, door jamb sticker, or any visible vehicle information.
+
+Return ONLY a JSON object with these exact fields (use empty string if not found):
+{
+  "vin": "",
+  "year": "",
+  "make": "",
+  "model": "",
+  "trim": "",
+  "engine": ""
+}
+
+For the VIN: it is a 17-character alphanumeric code (no I, O, or Q letters). Look carefully at stickers, plates, or printed text.
+For engine: if not directly visible, leave empty and it can be decoded from the VIN.
+Return ONLY the JSON, no other text.`;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': CFG.CLAUDE_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: 'claude-opus-4-6',
+        max_tokens: 300,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    if(!resp.ok) throw new Error('API error '+resp.status);
+    const data = await resp.json();
+    const rawText = data.content?.[0]?.text || '';
+
+    let parsed;
+    try {
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
+    } catch(e) {
+      throw new Error('Could not parse AI response');
+    }
+
+    // Fill VIN field
+    const vinFound = (parsed.vin||'').replace(/[^A-HJ-NPR-Z0-9]/gi,'').toUpperCase();
+    if(vinFound.length===17) {
+      const vinEl = document.getElementById('vin');
+      vinEl.value = vinFound;
+      vinEl.classList.add('autofilled');
+      // Also run NHTSA decode with found VIN
+      showDecodeMsg('loading', `✓ VIN extracted: ${vinFound} — now looking up vehicle details…`);
+      await decodeVinText();
+      return;
+    }
+
+    // Fill what we have from AI directly
+    const fields = {
+      year: parsed.year||'', make: parsed.make||'',
+      model: parsed.model||'', submodel: parsed.trim||'', engine: parsed.engine||''
+    };
+    let filled = 0;
+    Object.entries(fields).forEach(([id,v]) => {
+      if(v){ const el=document.getElementById(id); if(el){el.value=v;el.classList.add('autofilled');setErr(id,false);filled++;} }
+    });
+
+    if(filled > 0) {
+      showDecodeMsg('ok', `✓ Found vehicle info from photo. Review the fields below and fill in anything missing.`);
+    } else {
+      showDecodeMsg('err', '⚠ Could not read vehicle info from this photo. Try a clearer photo of the VIN sticker, or type the VIN manually.');
+    }
+
+  } catch(err) {
+    console.warn('Photo VIN decode error:', err.message);
+    showDecodeMsg('err', '⚠ Photo decode failed. Try a clearer, well-lit photo of the VIN sticker — or type the VIN manually in the other tab.');
+  }
+}
+
+// ══════════════════════════════════════
+// SUBMIT
+// ══════════════════════════════════════
+let allLeads = [];
+
+function getUrgency(){return document.querySelector('input[name="urg"]:checked')?.value||'Within a week'}
+
+async function submitForm() {
+  if(!v2()) return;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled=true; btn.innerHTML='<div class="spin"></div> Submitting…';
+
+  const lead = {
+    id:             Date.now(),
+    isNew:          true,
+    Timestamp:      new Date().toLocaleString(),
+    'First Name':   fv('firstName'),
+    'Last Name':    fv('lastName'),
+    Phone:          fv('phone'),
+    Email:          fv('email'),
+    'Zip Code':     fv('zip'),
+    Year:           fv('year'),
+    Make:           fv('make'),
+    Model:          fv('model'),
+    'Sub-Model':    fv('submodel'),
+    Engine:         fv('engine'),
+    Mileage:        fv('mileage'),
+    VIN:            fv('vin').toUpperCase(),
+    'Service Type': fv('serviceType'),
+    Description:    fv('description'),
+    Urgency:        getUrgency(),
+    Source:         fv('source'),
+  };
+
+  allLeads.unshift(lead);
+  saveLeads();
+
+  if(CFG.SHEETS_URL) {
+    try {
+      const params = new URLSearchParams({ data: JSON.stringify(lead) });
+      await fetch(CFG.SHEETS_URL + '?' + params.toString());
+    } catch(e){}
+  }
+
+  // SHOW SUCCESS
+  document.querySelectorAll('.c-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('cSuccess').style.display='block';
+  document.querySelector('.prog').style.opacity='.25';
+  document.getElementById('stepLbl').innerHTML='<span style="color:var(--success)">✓ Submitted</span>';
+  btn.disabled=false; btn.textContent='Submit Request';
+
+  // FIRE ALERT — store for operator page to pick up
+  pendingAlert = lead;
+  localStorage.setItem('mow_pending_alert', JSON.stringify(lead));
+  fireAlert(lead);
+}
+
+// ══════════════════════════════════════
+// ALERT SYSTEM — pronounced Yelp-style
+// ══════════════════════════════════════
+let alertDismissTimer = null;
+let alertLead = null;
+let pendingAlert = null;
+
+function fireAlert(lead) {
+  alertLead = lead;
+  const urgency = lead.Urgency || '';
+  const name    = `${lead['First Name']} ${lead['Last Name']}`;
+  const service = lead['Service Type'] || 'Service request';
+
+  document.getElementById('alertTitle').textContent  = `New Lead — ${urgency.includes('Emergency') ? '🚨 EMERGENCY' : service}`;
+  document.getElementById('alertBody').textContent   = `${name} · ${lead.Year||''} ${lead.Make||''} ${lead.Model||''} · ${lead['Zip Code']||''}`;
+  document.getElementById('alertTime').textContent   = 'now';
+
+  // Reset and show
+  const banner = document.getElementById('alertBanner');
+  const bar    = document.getElementById('alertBar');
+  bar.style.animation = 'none';
+  banner.classList.remove('show');
+  void banner.offsetWidth; // reflow
+  bar.style.animation = 'drain 6s linear forwards';
+  banner.classList.add('show');
+
+  // Vibrate
+  if(navigator.vibrate) navigator.vibrate([100,50,100,50,200]);
+
+  // Sound
+  playAlertSound(urgency.includes('Emergency'));
+
+  // System notification (if on operator page)
+  if(location.hash === '#operator' && 'Notification' in window) {
+    const fire = () => {
+      if(Notification.permission==='granted') {
+        new Notification('🔧 New MOW Lead', {
+          body: `${name} — ${service} (${urgency})`,
+          tag: 'mow-lead-'+lead.id,
+          requireInteraction: urgency.includes('Emergency'),
+        });
+      }
+    };
+    Notification.permission==='default' ? Notification.requestPermission().then(fire) : fire();
+  }
+
+  clearTimeout(alertDismissTimer);
+  alertDismissTimer = setTimeout(dismissAlert, 7000);
+}
+
+function dismissAlert() {
+  clearTimeout(alertDismissTimer);
+  document.getElementById('alertBanner').classList.remove('show');
+}
+
+function viewFromAlert() {
+  dismissAlert();
+  if(alertLead) {
+    location.hash='#operator';
+    setTimeout(() => {
+      if(!opAuthed) return;
+      const idx = allLeads.findIndex(l=>l.id===alertLead.id);
+      if(idx>=0) openDrawer(idx);
+    }, 400);
+  }
+}
+
+// Web Audio alert sound
+function playAlertSound(isEmergency) {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const notes = isEmergency ? [880,660,880,660,880] : [523,659,784];
+    let t = ctx.currentTime;
+    notes.forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.35, t+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t+0.18);
+      osc.start(t); osc.stop(t+0.18);
+      t += isEmergency ? 0.19 : 0.16;
+    });
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════
+// LOCAL STORAGE
+// ══════════════════════════════════════
+function saveLeads(){try{localStorage.setItem('mow_leads',JSON.stringify(allLeads))}catch(e){}}
+function loadLeads(){try{const d=localStorage.getItem('mow_leads');if(d)allLeads=JSON.parse(d)}catch(e){allLeads=[]}}
+loadLeads();
+
+// ══════════════════════════════════════
+// OPERATOR
+// ══════════════════════════════════════
+let opAuthed = false;
+let filterMode = 'all';
+
+function doLogin() {
+  if(document.getElementById('opPw').value === CFG.OP_PASSWORD) {
+    opAuthed=true;
+    document.getElementById('opLogin').style.display='none';
+    document.getElementById('opDash').style.display='block';
+    refreshDash();
+    if('Notification' in window && Notification.permission==='default') Notification.requestPermission();
+    // Check for pending alert from customer side
+    try {
+      const pa = localStorage.getItem('mow_pending_alert');
+      if(pa) { const lead = JSON.parse(pa); fireAlert(lead); localStorage.removeItem('mow_pending_alert'); }
+    } catch(e) {}
+    // Poll for new leads every 30s
+    setInterval(() => { if(opAuthed) refreshDash(); }, 30000);
+  } else {
+    const e=document.getElementById('opErr'); e.style.display='block';
+    setTimeout(()=>e.style.display='none',3000);
+  }
+}
+function doLogout(){
+  opAuthed=false;
+  document.getElementById('opPw').value='';
+  document.getElementById('opDash').style.display='none';
+  document.getElementById('opLogin').style.display='flex';
+}
+
+async function refreshDash() {
+  loadLeads();
+  if(CFG.SHEETS_URL){
+    try{
+      const res=await fetch(CFG.SHEETS_URL+'?action=get&key='+CFG.OP_PASSWORD);
+      if(res.ok){const r=await res.json();if(Array.isArray(r)&&r.length){allLeads=r.map(x=>({...x,isNew:false}));saveLeads();}}
+    }catch(e){}
+  }
+  updateStats(); renderTable();
+}
+
+function updateStats() {
+  const now=new Date(), wa=new Date(now-7*24*60*60*1000);
+  document.getElementById('sTotal').textContent=allLeads.length;
+  document.getElementById('sWeek').textContent=allLeads.filter(l=>new Date(l.Timestamp)>wa).length;
+  document.getElementById('sEmerg').textContent=allLeads.filter(l=>(l.Urgency||'').includes('Emergency')).length;
+  const days=allLeads.length?Math.max(1,Math.round((now-new Date(allLeads[allLeads.length-1]?.Timestamp))/(86400000))):1;
+  document.getElementById('sAvg').textContent=(allLeads.length/days).toFixed(1);
+  const nc=allLeads.filter(l=>l.isNew).length;
+  const b=document.getElementById('newBadge');
+  if(nc>0){b.style.display='block';b.textContent=nc+' new'}else{b.style.display='none'}
+}
+
+function setFilter(m,el){
+  filterMode=m;
+  document.querySelectorAll('.fp').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active'); renderTable();
+}
+
+function urgClass(u){
+  if(!u)return'u-flex';
+  if(u.includes('Emergency'))return'u-em';
+  if(u.includes('ASAP'))return'u-asap';
+  if(u.includes('week'))return'u-week';
+  return'u-flex';
+}
+
+function renderTable() {
+  const q=(document.getElementById('opSearch')?.value||'').toLowerCase();
+  let leads=[...allLeads];
+  if(filterMode!=='all')leads=leads.filter(l=>(l.Urgency||'').includes(filterMode));
+  if(q)leads=leads.filter(l=>['First Name','Last Name','VIN','Service Type','Make','Model','Phone'].some(k=>(l[k]||'').toString().toLowerCase().includes(q)));
+
+  const tb=document.getElementById('leadsBody');
+  if(!leads.length){tb.innerHTML='<tr><td colspan="6" class="op-empty">No leads match this filter.</td></tr>';return;}
+  tb.innerHTML=leads.map(l=>`
+    <tr class="${l.isNew?'is-new':''}" onclick="openDrawer(${allLeads.indexOf(l)})" style="cursor:pointer">
+      <td style="color:var(--muted);font-size:12px;white-space:nowrap">${fmtTime(l.Timestamp)}</td>
+      <td><div style="font-weight:500">${l['First Name']||''} ${l['Last Name']||''}</div><div style="font-size:12px;color:var(--muted)">${l.Phone||''}</div></td>
+      <td><div>${[l.Year,l.Make,l.Model].filter(Boolean).join(' ')}</div><div style="font-size:12px;color:var(--muted)">${l['Sub-Model']||''}</div></td>
+      <td style="font-size:13px">${l['Service Type']||'—'}</td>
+      <td><span class="ub ${urgClass(l.Urgency)}">${l.Urgency||'—'}</span></td>
+      <td style="font-family:monospace;font-size:12px;color:var(--muted)">${l.VIN||'—'}</td>
+    </tr>`).join('');
+}
+
+function fmtTime(ts){
+  if(!ts)return'—';const d=new Date(ts);if(isNaN(d))return ts;
+  const diff=Date.now()-d;
+  if(diff<60000)return'Just now';
+  if(diff<3600000)return Math.floor(diff/60000)+'m ago';
+  if(diff<86400000)return Math.floor(diff/3600000)+'h ago';
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+function openDrawer(idx) {
+  const l=allLeads[idx]; if(!l)return;
+  if(l.isNew){l.isNew=false;saveLeads();updateStats();renderTable();}
+  document.getElementById('drwTitle').textContent=`${l['First Name']||''} ${l['Last Name']||''}`;
+  document.getElementById('drwBody').innerHTML=`
+    <div class="dl-sec">
+      <div class="dl-sec-title">Contact</div>
+      ${dr('Phone',l.Phone)} ${dr('Email',l.Email||'—')} ${dr('Zip',l['Zip Code']||'—')} ${dr('Source',l.Source||'—')}
+    </div>
+    <div class="dl-sec">
+      <div class="dl-sec-title">Vehicle</div>
+      ${dr('Year',l.Year)} ${dr('Make',l.Make)} ${dr('Model',l.Model)}
+      ${dr('Trim',l['Sub-Model']||'—')} ${dr('Engine',l.Engine||'—')} ${dr('Mileage',l.Mileage||'—')}
+      ${dr('VIN',`<span style="font-family:monospace;font-size:12px;letter-spacing:1px">${l.VIN||'—'}</span>`)}
+    </div>
+    <div class="dl-sec">
+      <div class="dl-sec-title">Service</div>
+      ${dr('Type',l['Service Type']||'—')} ${dr('Urgency',`<span class="ub ${urgClass(l.Urgency)}">${l.Urgency||'—'}</span>`)} ${dr('Submitted',l.Timestamp||'—')}
+      <div style="margin-top:14px"><div class="dl-sec-title">Issue Description</div><div class="dl-desc">${l.Description||'—'}</div></div>
+    </div>`;
+  document.getElementById('drwOverlay').style.display='block';
+  setTimeout(()=>document.getElementById('drw').classList.add('open'),10);
+}
+function dr(k,v){return`<div class="dl-row"><div class="dl-k">${k}</div><div class="dl-v">${v}</div></div>`}
+function closeDrawer(){
+  document.getElementById('drw').classList.remove('open');
+  setTimeout(()=>document.getElementById('drwOverlay').style.display='none',280);
+}
+
+function exportCSV(){
+  if(!allLeads.length)return;
+  const cols=['Timestamp','First Name','Last Name','Phone','Email','Zip Code','Year','Make','Model','Sub-Model','Engine','Mileage','VIN','Service Type','Description','Urgency','Source'];
+  const rows=allLeads.map(l=>cols.map(c=>'"'+(l[c]||'').toString().replace(/"/g,'""')+'"').join(','));
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([[cols.join(','),...rows].join('\n')],{type:'text/csv'}));
+  a.download='MOW_Leads_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+</script>
+</body>
+</html>
